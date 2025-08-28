@@ -69,7 +69,8 @@ def send_to_ollama(text, model_name):
         "prompt": text
     }
     try:
-        response = requests.post(url, json=payload, timeout=300, stream=True)
+        # Increase timeout for large file processing
+        response = requests.post(url, json=payload, timeout=900, stream=True)
         response.raise_for_status()
         result = ""
         for line in response.iter_lines():
@@ -92,6 +93,9 @@ def send_to_ollama(text, model_name):
 from flask import Flask, render_template_string, request, jsonify
 import os
 
+# Constants
+DEFAULT_MODEL = 'ALIENTELLIGENCE/accountingandtaxation'
+
 app = Flask(__name__)
 
 HTML = '''
@@ -103,7 +107,7 @@ HTML = '''
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         textarea { width: 100%; height: 300px; }
-        button { padding: 10px 20px; font-size: 16px; }
+        button { padding: 10px 20px, font-size: 16px; }
         .upload-section { margin-bottom: 20px; }
         #clock { font-size: 18px; margin-bottom: 20px; color: #333; }
     </style>
@@ -242,56 +246,62 @@ HTML = '''
 '''
 from flask import Flask, render_template_string, request, jsonify
 from werkzeug.utils import secure_filename
+
+# Helper functions must be defined before use in upload_image
+
+def process_uploaded_file(file, instruction):
+    filename = secure_filename(file.filename)
+    images_dir = "images"
+    os.makedirs(images_dir, exist_ok=True)
+    save_path = os.path.join(images_dir, filename)
+    file.save(save_path)
+    ext = os.path.splitext(filename)[1].lower()
+    model_name = request.form.get('model', DEFAULT_MODEL)
+    if ext == '.pdf':
+        extracted_text = extract_text_from_pdf(save_path)
+        prompt = build_prompt(instruction, extracted_text)
+        result_text = send_to_ollama(prompt, model_name)
+    elif ext == '.md':
+        extracted_text = extract_text_from_md(save_path)
+        prompt = build_prompt(instruction, extracted_text)
+        result_text = send_to_ollama(prompt, model_name)
+    else:
+        extracted_text = extract_text_from_image(save_path)
+        prompt = build_prompt(instruction, extracted_text)
+        result_text = send_to_ollama(prompt, model_name)
+        # Remove the file if it is a PNG after processing
+        if filename.lower().endswith('.png'):
+            try:
+                os.remove(save_path)
+            except Exception:
+                pass
+    return filename, result_text
+
+def build_prompt(instruction, extracted_text):
+    if instruction and extracted_text:
+        return f"{instruction}\n\n{extracted_text}"
+    elif instruction:
+        return instruction
+    else:
+        return extracted_text
+
 @app.route("/upload", methods=["POST"])
 def upload_image():
     start_time = time.time()
-    model_name = request.form.get('model', 'ALIENTELLIGENCE/accountingandtaxation')
+    model_name = request.form.get('model', DEFAULT_MODEL)
     instruction = request.form.get('instruction', '').strip()
     file = request.files.get('file', None)
-    prompt = instruction
     filename = None
     if file and file.filename != '':
-        filename = secure_filename(file.filename)
-        images_dir = "images"
-        os.makedirs(images_dir, exist_ok=True)
-        save_path = os.path.join(images_dir, filename)
-        file.save(save_path)
-        ext = os.path.splitext(filename)[1].lower()
-        if ext == '.pdf':
-            extracted_text = extract_text_from_pdf(save_path)
-            if instruction:
-                prompt = f"{instruction}\n\n{extracted_text}"
-            else:
-                prompt = extracted_text
-            result_text = send_to_ollama(prompt, model_name)
-        elif ext == '.md':
-            extracted_text = extract_text_from_md(save_path)
-            if instruction:
-                prompt = f"{instruction}\n\n{extracted_text}"
-            else:
-                prompt = extracted_text
-            result_text = send_to_ollama(prompt, model_name)
-        else:
-            # Process as image
-            extracted_text = extract_text_from_image(save_path)
-            if instruction:
-                prompt = f"{instruction}\n\n{extracted_text}"
-            else:
-                prompt = extracted_text
-            result_text = send_to_ollama(prompt, model_name)
-            # Remove the file if it is a PNG after processing
-            if filename.lower().endswith('.png'):
-                try:
-                    os.remove(save_path)
-                except Exception:
-                    pass
+        filename, result_text = process_uploaded_file(file, instruction)
     elif not instruction:
         return jsonify(message="No file or instruction provided."), 400
     else:
+        prompt = build_prompt(instruction, None)
         result_text = send_to_ollama(prompt, model_name)
     total_time = time.time() - start_time
     msg = f"Processed with model '{model_name}'."
-    if file and file.filename != '':
+    if filename:
         msg = f"File '{filename}' uploaded and {msg}"
     # Write response to log file
     log_dir = os.path.join(os.path.dirname(__file__), 'log')
@@ -306,6 +316,17 @@ def index():
     return render_template_string(HTML)
 
 ## /run endpoint is now unused and can be removed or left for batch processing if needed
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    from flask import jsonify
+    import traceback
+    response = {
+        "message": f"Server error: {str(e)}",
+        "result": "",
+        "trace": traceback.format_exc()
+    }
+    return jsonify(response), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
