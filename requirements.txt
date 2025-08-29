@@ -1,0 +1,10 @@
+Flask
+flask-cors
+requests
+pytesseract
+Pillow
+PyPDF2
+pdf2image
+pygetwindow
+pyautogui
+keyboard
