@@ -64,7 +64,7 @@ import json
 import re
 def send_to_ollama(text, model_name):
     """Send extracted text to Ollama server and return the response, filtering out <think> tags."""
-    url = "http://host.docker.internal:11434/api/generate"
+    url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434/api/generate")
     payload = {
         "model": model_name,
         "prompt": text
@@ -108,7 +108,7 @@ except ImportError:
     pass
 
 # Constants
-DEFAULT_MODEL = 'ALIENTELLIGENCE/accountingandtaxation'
+DEFAULT_MODEL = 'phi4:latest'
 
 app = Flask(__name__)
 
@@ -117,7 +117,7 @@ HTML = '''
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Image2Text Ollama UI</title>
+    <title>Ollama Dashboard</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; }
         textarea { width: 100%; height: 300px; }
@@ -127,7 +127,7 @@ HTML = '''
     </style>
 </head>
 <body>
-    <h2>Extract Text from Images and Query Ollama</h2>
+    <h2>My Dashboard with Ollama</h2>
     <div id="clock"></div>
     <div id="timer" style="font-size:16px;color:#007700;"></div>
     <div class="upload-section">
@@ -136,11 +136,8 @@ HTML = '''
             <input type="file" id="file" name="file" accept="image/png, image/jpeg,application/pdf,.md" multiple>
             <label for="model">Choose model:</label>
             <select id="model" name="model">
-                <option value="ALIENTELLIGENCE/accountingandtaxation">Accountingandtaxation</option>
-                <option value="llama3.2-vision:latest">llama3.2-vision</option>
-                <option value="deepseek-coder:1.3b">deepseek-coder</option>
-                <option value="qwen3:8b">qwen3</option>
-                <option value="mistral:7b">mistral-7b</option>
+                <option value="phi4:latest">phi4</option>
+                <option value="phi3:latest">phi3</option>
                 <!-- Add more models as needed -->
             </select>
             <br><label for="instruction">Additional instruction for model:</label>
@@ -357,7 +354,8 @@ import json
 import re
 def send_to_ollama(text, model_name):
     """Send extracted text to Ollama server and return the response, filtering out <think> tags."""
-    url = "http://host.docker.internal:11434/api/generate"
+    url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434/api/generate")
+
     payload = {
         "model": model_name,
         "prompt": text
@@ -381,7 +379,28 @@ def send_to_ollama(text, model_name):
     except Exception as e:
         return f"Error communicating with Ollama server: {e}"
 
+#------------------
+class OllamaClient:
+    def __init__(self, base_url: str = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434/api/generate")
+):
+        self.base_url = base_url
+        self.session = requests.Session()
 
+    def generate(self, model: str, prompt: str) -> str:
+        url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434/api/generate")
+        data = {"model": model, "prompt": prompt}
+        try:
+            with self.session.post(url, json=data, stream=True) as response:
+                response.raise_for_status()
+                full_response = ""
+                for line in response.iter_lines():
+                    if line:
+                        chunk = json.loads(line.decode("utf-8"))
+                        full_response += chunk.get("response", "")
+                return full_response
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Request failed: {e}")
+#------------------
 
 # --- Flask Web UI ---
 from flask import Flask, render_template_string, request, jsonify
@@ -401,7 +420,7 @@ except ImportError:
     pass
 
 # Constants
-DEFAULT_MODEL = 'ALIENTELLIGENCE/accountingandtaxation'
+DEFAULT_MODEL = 'llama3.2-vision:latest'
 
 app = Flask(__name__)
 
@@ -429,8 +448,8 @@ HTML = '''
             <input type="file" id="file" name="file" accept="image/png, image/jpeg,application/pdf,.md" multiple>
             <label for="model">Choose model:</label>
             <select id="model" name="model">
-                <option value="ALIENTELLIGENCE/accountingandtaxation">Accountingandtaxation</option>
                 <option value="llama3.2-vision:latest">llama3.2-vision</option>
+                <option value="phi4:latest">phi4</option>
                 <option value="deepseek-coder:1.3b">deepseek-coder</option>
                 <option value="qwen3:8b">qwen3</option>
                 <option value="mistral:7b">mistral-7b</option>

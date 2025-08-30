@@ -1,0 +1,89 @@
+{
+    "models": [
+        {
+            "name": "mistral:7b",
+            "model": "mistral:7b",
+            "modified_at": "2025-08-28T10:26:43.79330593-04:00",
+            "size": 4372824384,
+            "digest": "6577803aa9a036369e481d648a2baebb381ebc6e897f2bb9a766a2aa7bfbc1cf",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": "llama",
+                "families": [
+                    "llama"
+                ],
+                "parameter_size": "7.2B",
+                "quantization_level": "Q4_K_M"
+            }
+        },
+        {
+            "name": "ALIENTELLIGENCE/accountingandtaxation:latest",
+            "model": "ALIENTELLIGENCE/accountingandtaxation:latest",
+            "modified_at": "2025-08-28T06:32:49.031788778-04:00",
+            "size": 4661231343,
+            "digest": "b8137e768d23f0a611c82b007a0f375c2eee436801b2697abdf2a09f020a30ed",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": "llama",
+                "families": [
+                    "llama"
+                ],
+                "parameter_size": "8.0B",
+                "quantization_level": "Q4_0"
+            }
+        },
+        {
+            "name": "llama3.2-vision:latest",
+            "model": "llama3.2-vision:latest",
+            "modified_at": "2025-08-27T22:43:44.577572277-04:00",
+            "size": 7816589186,
+            "digest": "6f2f9757ae97e8a3f8ea33d6adb2b11d93d9a35bef277cd2c0b1b5af8e8d0b1e",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": "mllama",
+                "families": [
+                    "mllama"
+                ],
+                "parameter_size": "10.7B",
+                "quantization_level": "Q4_K_M"
+            }
+        },
+        {
+            "name": "deepseek-coder:1.3b",
+            "model": "deepseek-coder:1.3b",
+            "modified_at": "2025-08-27T22:07:18.51946368-04:00",
+            "size": 776080839,
+            "digest": "3ddd2d3fc8d2b5fe039d18f859271132fd9c7960ef0be1864984442dc2a915d3",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": "llama",
+                "families": [
+                    "llama"
+                ],
+                "parameter_size": "1B",
+                "quantization_level": "Q4_0"
+            }
+        },
+        {
+            "name": "qwen3:8b",
+            "model": "qwen3:8b",
+            "modified_at": "2025-08-27T22:04:43.276997219-04:00",
+            "size": 5225388164,
+            "digest": "500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": "qwen3",
+                "families": [
+                    "qwen3"
+                ],
+                "parameter_size": "8.2B",
+                "quantization_level": "Q4_K_M"
+            }
+        }
+    ]
+}
