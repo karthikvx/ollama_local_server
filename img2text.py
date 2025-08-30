@@ -62,9 +62,10 @@ def extract_text_from_image(image_path):
 
 import json
 import re
+OLLAMA_DOCKER_API_GENERATE_URL = "http://ollama:11434/api/generate"
 def send_to_ollama(text, model_name):
     """Send extracted text to Ollama server and return the response, filtering out <think> tags."""
-    url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434/api/generate")
+    url = os.getenv("OLLAMA_BASE_URL", OLLAMA_DOCKER_API_GENERATE_URL)
     payload = {
         "model": model_name,
         "prompt": text
@@ -354,7 +355,7 @@ import json
 import re
 def send_to_ollama(text, model_name):
     """Send extracted text to Ollama server and return the response, filtering out <think> tags."""
-    url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434/api/generate")
+    url = os.getenv("OLLAMA_BASE_URL", OLLAMA_DOCKER_API_GENERATE_URL)
 
     payload = {
         "model": model_name,
@@ -381,13 +382,13 @@ def send_to_ollama(text, model_name):
 
 #------------------
 class OllamaClient:
-    def __init__(self, base_url: str = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434/api/generate")
+    def __init__(self, base_url: str = os.getenv("OLLAMA_BASE_URL", OLLAMA_DOCKER_API_GENERATE_URL)
 ):
         self.base_url = base_url
         self.session = requests.Session()
 
     def generate(self, model: str, prompt: str) -> str:
-        url = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434/api/generate")
+        url = os.getenv("OLLAMA_BASE_URL", OLLAMA_DOCKER_API_GENERATE_URL)
         data = {"model": model, "prompt": prompt}
         try:
             with self.session.post(url, json=data, stream=True) as response:
