@@ -440,7 +440,7 @@ HTML = '''
     </style>
 </head>
 <body>
-    <h2>Extract Text from Images and Query Ollama</h2>
+    <h2>Dashboard</h2>
     <div id="clock"></div>
     <div id="timer" style="font-size:16px;color:#007700;"></div>
     <div class="upload-section">
@@ -451,9 +451,6 @@ HTML = '''
             <select id="model" name="model">
                 <option value="llama3.2-vision:latest">llama3.2-vision</option>
                 <option value="phi4:latest">phi4</option>
-                <option value="deepseek-coder:1.3b">deepseek-coder</option>
-                <option value="qwen3:8b">qwen3</option>
-                <option value="mistral:7b">mistral-7b</option>
                 <!-- Add more models as needed -->
             </select>
             <br><label for="instruction">Additional instruction for model:</label>
