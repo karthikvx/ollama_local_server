@@ -62,10 +62,10 @@ def extract_text_from_image(image_path):
 
 import json
 import re
-OLLAMA_DOCKER_API_GENERATE_URL = "http://ollama:11434/api/generate"
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 def send_to_ollama(text, model_name):
     """Send extracted text to Ollama server and return the response, filtering out <think> tags."""
-    url = os.getenv("OLLAMA_BASE_URL", OLLAMA_DOCKER_API_GENERATE_URL)
+    url = f"{OLLAMA_BASE_URL}/api/generate"
     payload = {
         "model": model_name,
         "prompt": text
@@ -109,7 +109,7 @@ except ImportError:
     pass
 
 # Constants
-DEFAULT_MODEL = 'phi4:latest'
+DEFAULT_MODEL = 'llama3.2:1b'
 
 app = Flask(__name__)
 
@@ -137,8 +137,7 @@ HTML = '''
             <input type="file" id="file" name="file" accept="image/png, image/jpeg,application/pdf,.md" multiple>
             <label for="model">Choose model:</label>
             <select id="model" name="model">
-                <option value="phi4:latest">phi4</option>
-                <option value="phi3:latest">phi3</option>
+                <option value="llama3.2:1b">llama3.2:1b</option>
                 <!-- Add more models as needed -->
             </select>
             <br><label for="instruction">Additional instruction for model:</label>
@@ -355,8 +354,7 @@ import json
 import re
 def send_to_ollama(text, model_name):
     """Send extracted text to Ollama server and return the response, filtering out <think> tags."""
-    url = os.getenv("OLLAMA_BASE_URL", OLLAMA_DOCKER_API_GENERATE_URL)
-
+    url = f"{OLLAMA_BASE_URL}/api/generate"
     payload = {
         "model": model_name,
         "prompt": text
@@ -382,13 +380,12 @@ def send_to_ollama(text, model_name):
 
 #------------------
 class OllamaClient:
-    def __init__(self, base_url: str = os.getenv("OLLAMA_BASE_URL", OLLAMA_DOCKER_API_GENERATE_URL)
-):
+    def __init__(self, base_url: f"{OLLAMA_BASE_URL}/api/generate"):
         self.base_url = base_url
         self.session = requests.Session()
 
     def generate(self, model: str, prompt: str) -> str:
-        url = os.getenv("OLLAMA_BASE_URL", OLLAMA_DOCKER_API_GENERATE_URL)
+        url = f"{OLLAMA_BASE_URL}/api/generate"        
         data = {"model": model, "prompt": prompt}
         try:
             with self.session.post(url, json=data, stream=True) as response:
